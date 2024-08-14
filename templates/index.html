@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f3f3;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        .ip {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #005a9e;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Company Logo" class="logo">
+        <div class="ip">Il tuo IP pubblico: {{ public_ip }}</div>
+        <form method="post">
+            <div class="form-group">
+                <label for="ip">Indirizzo IP:</label>
+                <input type="text" id="ip" name="ip" required>
+            </div>
+            <div class="form-group">
+                <label for="subnet">Subnet Mask:</label>
+                <input type="text" id="subnet" name="subnet" required>
+            </div>
+            <button type="submit" class="btn">Calcola</button>
+        </form>
+        {% if subnet_info %}
+        <div class="result">
+            <h3>Risultati del calcolo:</h3>
+            <p><strong>Network Address:</strong> {{ subnet_info.network }}</p>
+            <p><strong>Broadcast Address:</strong> {{ subnet_info.broadcast }}</p>
+            <p><strong>Netmask:</strong> {{ subnet_info.netmask }}</p>
+            <p><strong>Hosts:</strong> {{ subnet_info.hosts }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
