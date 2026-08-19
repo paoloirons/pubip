@@ -1,91 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Page</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Public IP & Subnet Calculator</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f3f3;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .logo {
-            width: 150px;
-            margin-bottom: 20px;
-        }
-        .ip {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #005a9e;
-        }
-        .result {
-            margin-top: 20px;
-            text-align: left;
-        }
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f3f4f6; color: #1f2937; margin: 0; padding: 32px 16px; }
+        .container { width: min(720px, 100%); margin: 0 auto; background: #fff; padding: 28px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+        .logo { display: block; width: 120px; height: auto; margin: 0 auto 18px; }
+        h1 { margin: 0 0 8px; text-align: center; font-size: 1.6rem; }
+        .public-ip { text-align: center; font-size: 1.15rem; margin-bottom: 24px; }
+        form { display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px; align-items: end; }
+        label { display: block; margin-bottom: 6px; font-size: .9rem; font-weight: 600; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font: inherit; }
+        button { padding: 10px 18px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer; }
+        .result, .error { margin-top: 24px; padding: 16px; border-radius: 10px; }
+        .result { background: #f9fafb; }
+        .error { background: #fef2f2; color: #991b1b; }
+        dl { display: grid; grid-template-columns: 170px 1fr; gap: 8px 12px; margin: 0; }
+        dt { font-weight: 700; }
+        dd { margin: 0; overflow-wrap: anywhere; }
+        .muted { color: #6b7280; }
+        @media (max-width: 640px) { form { grid-template-columns: 1fr; } dl { grid-template-columns: 1fr; gap: 4px; } dd { margin-bottom: 8px; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Company Logo" class="logo">
-        <div class="ip">Il tuo IP pubblico: {{ public_ip }}</div>
+    <main class="container">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+        <h1>Public IP & Subnet Calculator</h1>
+        <div class="public-ip">IP pubblico: <strong>{{ public_ip if public_ip else 'non disponibile' }}</strong></div>
         <form method="post">
-            <div class="form-group">
-                <label for="ip">Indirizzo IP:</label>
-                <input type="text" id="ip" name="ip" required>
-            </div>
-            <div class="form-group">
-                <label for="subnet">Subnet Mask:</label>
-                <input type="text" id="subnet" name="subnet" required>
-            </div>
-            <button type="submit" class="btn">Calcola</button>
+            <div><label for="ip">Indirizzo IP</label><input type="text" id="ip" name="ip" placeholder="192.168.1.10" required></div>
+            <div><label for="subnet">CIDR / Netmask</label><input type="text" id="subnet" name="subnet" placeholder="24" required></div>
+            <button type="submit">Calcola</button>
         </form>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
         {% if subnet_info %}
-        <div class="result">
-            <h3>Risultati del calcolo:</h3>
-            <p><strong>Network Address:</strong> {{ subnet_info.network }}</p>
-            <p><strong>Broadcast Address:</strong> {{ subnet_info.broadcast }}</p>
-            <p><strong>Netmask:</strong> {{ subnet_info.netmask }}</p>
-            <p><strong>Hosts:</strong> {{ subnet_info.hosts }}</p>
-        </div>
+        <section class="result"><dl>
+            <dt>Rete</dt><dd>{{ subnet_info.cidr }}</dd><dt>Network address</dt><dd>{{ subnet_info.network }}</dd>
+            <dt>Broadcast</dt><dd>{{ subnet_info.broadcast }}</dd><dt>Netmask</dt><dd>{{ subnet_info.netmask }}</dd>
+            <dt>Primo host</dt><dd>{{ subnet_info.first_host }}</dd><dt>Ultimo host</dt><dd>{{ subnet_info.last_host }}</dd>
+            <dt>Host utilizzabili</dt><dd>{{ subnet_info.usable_hosts }}</dd><dt>Indirizzi totali</dt><dd>{{ subnet_info.num_addresses }}</dd>
+        </dl></section>
         {% endif %}
-    </div>
+        <p class="muted">Il calcolo non genera la lista completa degli host, quindi resta sicuro anche con subnet molto grandi.</p>
+    </main>
 </body>
 </html>

@@ -1,22 +1,21 @@
-# Usa un'immagine base di Python
-FROM python:3.9-slim
+FROM python:3.13-slim
 
-# Imposta la directory di lavoro
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
 WORKDIR /app
 
-# Copia i file requirements.txt e installa le dipendenze
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && useradd --create-home --uid 10001 appuser
 
-# Installa Gunicorn
-RUN pip install gunicorn
+COPY --chown=appuser:appuser . .
 
-# Copia il resto del codice dell'applicazione
-COPY . .
-
-# Espone la porta su cui l'applicazione sarà in esecuzione
+USER appuser
 EXPOSE 5000
 
-# Comando per eseguire l'applicazione con Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/healthz', timeout=2)" || exit 1
 
+CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "--access-logfile", "-", "app:app"]
